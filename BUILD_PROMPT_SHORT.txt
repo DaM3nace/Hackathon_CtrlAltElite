@@ -1,0 +1,124 @@
+BUILD TECH BUDDY CHATBOT - Complete Project from Scratch
+
+Build a local-first technical support chatbot with text/voice interfaces, RAG over SOP documents, and device management tools.
+
+CORE FEATURES:
+1. Text Chat (HTML/CSS/JS) - Browser chat with streaming SSE responses
+2. Voice Chat (Realtime API) - Wake word "Hey Buddy", function calling, menu-driven
+3. RAG System - Chunk & embed SOPs (.txt/.docx), cosine similarity search
+4. MCP Tools - register_ont, register_router, swap_ont, device_status, push_config
+5. Conversational Flows - Multi-step guided ONT registration and swap
+6. SQLite Databases - chatbot.db (chat history) + devices.db (device management)
+7. Test Analytics - Generate mock data and retrospective reports
+8. End Chat Button - Reset session state (fixes topic-switching errors)
+
+TECH STACK:
+- Backend: Python 3.9+, FastAPI, SQLAlchemy, SQLite, OpenAI SDK
+- Frontend: Native HTML/CSS/JS (no frameworks), SSE streaming, WebRTC
+- Tools: Anaconda, python-docx, numpy
+- APIs: GPT-4o-mini (LLM), text-embedding-3-small (embeddings), gpt-4o-realtime-preview (voice)
+
+PROJECT STRUCTURE:
+tech_buddy_chatbot/
+├── api/
+│   ├── main.py (1200+ lines) - FastAPI app, conversational flows, SSE streaming
+│   ├── models.py - SQLAlchemy models (sessions, messages, tool_logs, documents, chunks)
+│   ├── database_sqlite.py - chatbot.db connection
+│   ├── rag_sqlite.py - RAG with embeddings (500-char chunks, 100 overlap)
+│   ├── requirements.txt - fastapi, uvicorn, sqlalchemy, openai, sse-starlette, python-docx, numpy
+│   └── static/
+│       ├── index.html (620+ lines) - Text chat UI with End Chat button
+│       └── voice.html (900+ lines) - Voice chat with Realtime API
+├── mcp_server/
+│   ├── simple_server.py (250+ lines) - MCP tool implementations
+│   └── mcp_database.py (500+ lines) - devices.db operations
+├── sops/ - SOP documents
+├── .env - OPENAI_API_KEY, DATABASE_URL, DEVICES_DB_URL, SOPS_DIR
+├── chatbot.db - SQLite (sessions, messages, tool_logs, documents, chunks)
+├── devices.db - SQLite (ont table, router table)
+├── start-conda-sqlite.bat / stop-conda-sqlite.bat
+├── ingest_documents.py + bat
+├── generate_test_data.py + bat
+└── generate_report.py + bat
+
+KEY IMPLEMENTATION DETAILS:
+
+1. VOICE CHAT SESSION CONFIG (CRITICAL):
+   - Wait for session.created event BEFORE sending session.update
+   - Must include modalities: ['text', 'audio'] for transcription
+   - Use "ON THE FIRST USER TURN" pattern in instructions
+   - Wake word "Hey Buddy" detected but not processed as turn
+   - silence_duration_ms: 1200 (allows full serial number entry)
+   - Tools in session config for function calling
+
+2. CONVERSATIONAL FLOWS:
+   - Store state in sessions.meta_data as JSON
+   - ONT Registration: awaiting_serial → check exists → awaiting_location → awaiting_speed
+   - ONT Swap: awaiting_old_serial → awaiting_new_serial → awaiting_speed → awaiting_reason
+   - Cancel handling: Check message.strip().lower() == "cancel" BEFORE uppercase conversion
+
+3. MCP TOOLS:
+   - Accept BOTH serial_number and device_id parameters (voice vs text compatibility)
+   - Check for duplicates before registration
+   - ONT swap: mark old as "replaced", register new with inherited config
+   - Store in devices.db with separate ont/router tables
+
+4. END CHAT FEATURE:
+   - Red button next to Send in text chat
+   - Calls POST /api/sessions/{session_id}/end
+   - clear_session_state() to reset conversational flows
+   - Generate new UUID, clear UI, show success message
+   - Prevents errors when switching device management → SOP questions
+
+5. RAG SYSTEM:
+   - Chunk: 500 chars, 100 overlap
+   - Embeddings stored as BLOB: np.array(...).tobytes()
+   - Retrieve: np.frombuffer(chunk.embedding, dtype=np.float32)
+   - Top-K cosine similarity search
+   - Auto-ingest on startup from sops/ directory
+
+6. DATABASE SCHEMAS:
+   chatbot.db: sessions(id, created_at, updated_at, meta_data), messages(id, session_id, role, content, created_at), tool_logs(id, session_id, tool_name, arguments, result, timestamp), documents(id, filename, content, ingested_at), chunks(id, document_id, chunk_index, text, embedding)
+   
+   devices.db: ont(id, serial_number UNIQUE, location, status, vlan, speed, port, ont_type, fiber_type, wireless_backup, technician, notes, registered_at, updated_at), router(id, serial_number UNIQUE, location, status, ip_address, subnet_mask, gateway, dns_primary, dns_secondary, wifi_ssid, wifi_password, notes, registered_at, updated_at)
+
+CRITICAL FIXES TO IMPLEMENT:
+- Voice transcription: modalities: ['text', 'audio'] + session.update timing
+- Cancel command: Check lowercase before uppercase conversion
+- Parameter flexibility: Accept serial_number OR device_id
+- Embedding storage: Convert to bytes for SQLite BLOB
+- Voice interruption: 1200ms silence threshold
+- State carryover: End Chat button clears session state
+
+TESTING CHECKLIST:
+✓ Text: Send message → streaming response with citations
+✓ Voice: "Hey Buddy" → menu → "register ONT" → conversational flow
+✓ Tools: Register ONT/router, swap ONT with speed change, check status
+✓ Cancel: Type "cancel" mid-flow → state cleared
+✓ End Chat: Click button → new session, no state carryover
+✓ RAG: Ask "How to install OMEGA ONT" → retrieves relevant chunks
+✓ Databases: chatbot.db and devices.db created with correct schemas
+
+START COMMAND SEQUENCE:
+1. conda create -n techbuddy python=3.9 && conda activate techbuddy
+2. pip install -r api/requirements.txt
+3. Create .env with OPENAI_API_KEY
+4. .\start-conda-sqlite.bat
+5. Open http://localhost:8000/ (text) or /voice (voice)
+6. .\ingest-documents.bat (ingest SOPs)
+7. Test: "register ONT ONT-12345 at Building A"
+
+BUILD PRIORITY:
+1. models.py + database_sqlite.py (chatbot.db)
+2. mcp_database.py (devices.db)
+3. simple_server.py (MCP tools)
+4. rag_sqlite.py (embeddings)
+5. main.py (FastAPI, flows, SSE)
+6. index.html (text UI)
+7. voice.html (Realtime API)
+8. Batch scripts + test data generators
+
+TOTAL OUTPUT: ~4,000 lines of code, 2 databases, 20+ docs, 15+ features
+
+Build step-by-step, test each feature before moving to next!
+
