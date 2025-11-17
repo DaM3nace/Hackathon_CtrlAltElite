@@ -32,7 +32,7 @@ DATABRICKS_HOST=dbc-4a93b454-f17b.cloud.databricks.com
 
 # Token: Personal Access Token from Databricks
 # Format: dapi followed by alphanumeric characters
-DATABRICKS_TOKEN=dapid0b48dc0de608f1e70d36cb20ac7699d
+DATABRICKS_TOKEN=add your token
 
 # HTTP Path: SQL Warehouse endpoint
 # Format: /sql/1.0/warehouses/{warehouse_id}
@@ -91,7 +91,7 @@ RAG_FTS_WEIGHT=0.4
 # Method 1: Using PowerShell with correct encoding
 Set-Content -Path .env -Value @'
 DATABRICKS_HOST=dbc-4a93b454-f17b.cloud.databricks.com
-DATABRICKS_TOKEN=dapid0b48dc0de608f1e70d36cb20ac7699d
+DATABRICKS_TOKEN=add your token here 
 DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/b914ad7a8dc4d91c
 DATABRICKS_CATALOG=hackathon
 DATABRICKS_SCHEMA=hackathon_ctrl_alt_elite
@@ -108,7 +108,7 @@ RAG_FTS_WEIGHT=0.4
 
 # Method 2: Using echo (simpler but watch for quotes)
 echo DATABRICKS_HOST=dbc-4a93b454-f17b.cloud.databricks.com > .env
-echo DATABRICKS_TOKEN=dapid0b48dc0de608f1e70d36cb20ac7699d >> .env
+echo DATABRICKS_TOKEN=add your token here  >> .env
 echo DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/b914ad7a8dc4d91c >> .env
 # ... add remaining lines
 ```
