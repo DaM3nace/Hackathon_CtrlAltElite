@@ -53,7 +53,7 @@ START: Is the chatbot responding?
 │   ├─ NO → Create .env file
 │   │   └─> powershell -Command "Set-Content -Path .env -Value @'
 │   │       DATABRICKS_HOST=dbc-4a93b454-f17b.cloud.databricks.com
-│   │       DATABRICKS_TOKEN=dapid0b48dc0de608f1e70d36cb20ac7699d
+│   │       DATABRICKS_TOKEN= add token here 
 │   │       DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/b914ad7a8dc4d91c
 │   │       '@ -Encoding ASCII -NoNewline"
 │   │
