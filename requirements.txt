@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+streamlit
+databricks-sql-connector
+python-docx
+openpyxl
+pandas
+python-multipart
+python-dotenv
+pydantic
+tiktoken
+PyPDF2
